@@ -115,9 +115,9 @@ endef
 # of a device whose upstream support is 64-bit only: warnings turned into
 # errors (32-bit often warns where 64-bit does not), and visible symbols left
 # unanswered, which make the kernel's syncconfig abort instead of picking a
-# default. olddefconfig settles the latter, the sed the former.
+# default. olddefconfig settles the latter, scripts/config the former.
 ifneq ($(filter arm,$(SUBTARGET)),)
-  KERNEL_SETTLE_CONFIG = sed -i '/^CONFIG_WERROR=/d' $(LINUX_DIR)/.config ; echo '# CONFIG_WERROR is not set' >> $(LINUX_DIR)/.config ; $(_SINGLE)$(KERNEL_MAKE) olddefconfig
+  KERNEL_SETTLE_CONFIG = cd $(LINUX_DIR) && scripts/config --file .config --disable WERROR ; $(_SINGLE)$(KERNEL_MAKE) olddefconfig
 else
   KERNEL_SETTLE_CONFIG = $(_SINGLE)$(KERNEL_MAKE) olddefconfig
 endif
