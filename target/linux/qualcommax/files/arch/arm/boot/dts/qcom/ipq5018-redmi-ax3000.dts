@@ -266,10 +266,15 @@
 
 			/*
 			 * QCA8337 Phy4 is wired to the IPQ5000 GE PHY (MAC0).
-			 * Like the other IPQ5018 boards upstream, leave this
-			 * port out of the DSA description: adding it makes the
-			 * WAN port stop working.
+			 * Same wiring as the SPNMX56 upstream: the GE PHY link
+			 * goes to MAC0 (dp1).
 			 */
+			port@5 {
+				reg = <5>;
+				phy-handle = <&qca8337_4>;
+				phy-mode = "gmii";
+				ethernet = <&dp1>;
+			};
 
 			/* CPU port ---SGMII---> IPQ5000 MAC1 */
 			port@6 {
