@@ -38,6 +38,8 @@ EXTRA_CFLAGS:= \
 	-fno-stack-protector \
 	-Wno-missing-prototypes \
 	-Wno-missing-declarations \
+	-Wno-error=incompatible-pointer-types \
+	-Wno-error=int-conversion \
 	-I$(STAGING_DIR)/usr/include
 
 MAKE_FLAGS+= \
