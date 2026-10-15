@@ -1,18 +1,10 @@
 name: Build host tools
 
+# This branch only builds the Redmi AX3000 (RA81) image - see
+# build-redmi-ax3000-arm.yml. The upstream workflows are kept for
+# reference but must not spawn hours of unrelated CI on every push.
 on:
-  pull_request:
-    paths:
-      - 'include/**'
-      - 'tools/**'
-      - '.github/workflows/tools.yml'
-  push:
-    paths:
-      - 'include/**'
-      - 'tools/**'
-      - '.github/workflows/tools.yml'
-    branches-ignore:
-      - master
+  workflow_dispatch:
 
 permissions:
   contents: read
