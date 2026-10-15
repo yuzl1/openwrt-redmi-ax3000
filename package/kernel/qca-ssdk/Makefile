@@ -73,6 +73,12 @@ ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq50xx")
     MAKE_FLAGS+= CHIP_TYPE=MP
 endif
 
+# The 32-bit ARM build of these boards is its own subtarget (the vendor
+# U-Boot cannot start an AArch64 kernel), so it needs the same chip type.
+ifeq ($(CONFIG_TARGET_SUBTARGET), "arm")
+    MAKE_FLAGS+= CHIP_TYPE=MP
+endif
+
 define Build/Compile
 	+$(MAKE) $(PKG_JOBS) $(MAKE_FLAGS) -C $(PKG_BUILD_DIR) $(LNX_CONFIG_OPTS)
 endef
