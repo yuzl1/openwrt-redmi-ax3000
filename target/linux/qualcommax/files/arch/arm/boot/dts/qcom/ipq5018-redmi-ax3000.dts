@@ -59,13 +59,13 @@
 		reset-button {
 			label = "reset";
 			gpios = <&tlmm 25 GPIO_ACTIVE_LOW>;
-			linux-code = <KEY_RESTART>;
+			linux,code = <KEY_RESTART>;
 		};
 
 		mesh-button {
 			label = "mesh";
 			gpios = <&tlmm 23 GPIO_ACTIVE_LOW>;
-			linux-code = <KEY_WPS_BUTTON>;
+			linux,code = <KEY_WPS_BUTTON>;
 		};
 	};
 
@@ -235,25 +235,10 @@
 	ethernet-switch@11 {
 		compatible = "qca,qca8337";
 		reg = <0x11>;
-		#address-cells = <1>;
-		#size-cells = <0>;
 
 		ports {
 			#address-cells = <1>;
 			#size-cells = <0>;
-
-			port@0 {
-				reg = <0>;
-				label = "cpu";
-				phy-mode = "sgmii";
-				ethernet = <&dp2>;
-				qca,sgmii-enable-pll;
-
-				fixed-link {
-					speed = <1000>;
-					full-duplex;
-				};
-			};
 
 			port@1 {
 				reg = <1>;
@@ -279,11 +264,24 @@
 				phy-handle = <&qca8337_3>;
 			};
 
-			port@5 {
-				reg = <5>;
-				phy-handle = <&qca8337_4>;
-				phy-mode = "gmii";
-				ethernet = <&dp1>;
+			/*
+			 * QCA8337 Phy4 is wired to the IPQ5000 GE PHY (MAC0).
+			 * Like the other IPQ5018 boards upstream, leave this
+			 * port out of the DSA description: adding it makes the
+			 * WAN port stop working.
+			 */
+
+			/* CPU port ---SGMII---> IPQ5000 MAC1 */
+			port@6 {
+				reg = <6>;
+				phy-mode = "sgmii";
+				ethernet = <&dp2>;
+				qca,sgmii-enable-pll;
+
+				fixed-link {
+					speed = <1000>;
+					full-duplex;
+				};
 			};
 		};
 	};

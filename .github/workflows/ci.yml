@@ -104,8 +104,10 @@ jobs:
           test -f "$DTS" || { echo "::error ::board DTS not copied into the kernel tree"; exit 1; }
 
           cpp -nostdinc -undef -D__DTS__ -x assembler-with-cpp \
-              -I"$LINUX_DIR/include" \
               -I"$LINUX_DIR/arch/arm/boot/dts" \
+              -I"$LINUX_DIR/arch/arm/boot/dts/include" \
+              -I"$LINUX_DIR/include" \
+              -I"$LINUX_DIR/scripts/dtc/include-prefixes" \
               "$DTS" > /tmp/board.dts.cooked 2> /tmp/cpp.log || {
             echo "::error ::device tree preprocessing failed"
             head -c 4000 /tmp/cpp.log | while IFS= read -r line; do
