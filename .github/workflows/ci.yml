@@ -92,6 +92,26 @@ jobs:
             exit 1
           fi
 
+      - name: Resolve and save the complete kernel config
+        # Keeps a copy of the fully resolved kernel configuration on a branch
+        # so that a symbol left without a value never has to be guessed again.
+        # olddefconfig also settles the config for the build below, where
+        # syncconfig aborts instead of asking.
+        run: |
+          LINUX_DIR="$(ls -d build_dir/target-*/linux-*/linux-* | head -1)"
+          echo "LINUX_DIR=$LINUX_DIR"
+          make -C "$LINUX_DIR" ARCH=arm olddefconfig > /tmp/olddefconfig.log 2>&1 || true
+          tail -n 5 /tmp/olddefconfig.log || true
+          wc -l "$LINUX_DIR/.config"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B kernel-config-dump
+          cp "$LINUX_DIR/.config" kernel-config-6.12-arm.dump
+          git add -f kernel-config-6.12-arm.dump
+          git commit -m "resolved kernel config for ${GITHUB_SHA}" || true
+          git push -f origin kernel-config-dump || true
+
       - name: Pre-flight device tree check
         run: |
           # Compile the board DTS on its own: the kernel Kbuild would only
