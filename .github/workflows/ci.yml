@@ -92,48 +92,6 @@ jobs:
             exit 1
           fi
 
-      - name: Resolve and save the complete kernel config
-        # Keeps a copy of the fully resolved kernel configuration on a branch
-        # so that a symbol left without a value never has to be guessed again.
-        # Building the kernel once makes OpenWrt write its merged .config; the
-        # kernel build itself aborts on the first symbol it cannot resolve, so
-        # the config is then completed with olddefconfig and copied back into
-        # the subtarget - the build below then runs through.
-        run: |
-          set -o pipefail
-          make -j"$(nproc)" target/linux/compile V=s > /tmp/kernel-compile.log 2>&1 || true
-          tail -n 5 /tmp/kernel-compile.log || true
-
-          LINUX_DIR="$(ls -d build_dir/target-*/linux-*/linux-* | head -1)"
-          echo "LINUX_DIR=$LINUX_DIR"
-          make -C "$LINUX_DIR" ARCH=arm olddefconfig > /tmp/olddefconfig.log 2>&1 || true
-          tail -n 5 /tmp/olddefconfig.log || true
-          wc -l "$LINUX_DIR/.config"
-
-          # Everything the kernel resolved, minus OpenWrt's own KERNEL_*
-          # switches, is a complete subtarget configuration.
-          grep -E '^(CONFIG_[A-Za-z0-9_]+=|# CONFIG_[A-Za-z0-9_]+ is not set)' \
-            "$LINUX_DIR/.config" | grep -v '^CONFIG_KERNEL_' > /tmp/resolved.config
-          wc -l /tmp/resolved.config
-          echo "### Kernel config symbols resolved" >> "$GITHUB_STEP_SUMMARY"
-          echo "| before | after |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| $(wc -l < target/linux/qualcommax/arm/config-6.12) | $(wc -l < /tmp/resolved.config) |" \
-            >> "$GITHUB_STEP_SUMMARY"
-          for sym in ARCH_QCOM_RESERVE_SMEM ARM_PSCI ARM_PSCI_CPUIDLE MTD_QCOMSMEM_PARTS SPI_QPIC_SNAND; do
-            printf '`%s`: %s\n\n' "$sym" "$(grep -E "^(# )?CONFIG_${sym}(=| )" /tmp/resolved.config || echo '未出现')" \
-              >> "$GITHUB_STEP_SUMMARY"
-          done
-          cp /tmp/resolved.config target/linux/qualcommax/arm/config-6.12
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -B kernel-config-dump
-          cp /tmp/resolved.config kernel-config-6.12-arm.dump
-          git add -f kernel-config-6.12-arm.dump
-          git commit -m "resolved kernel config for ${GITHUB_SHA}" || true
-          git push -f origin kernel-config-dump || true
-
       - name: Pre-flight device tree check
         run: |
           # Compile the board DTS on its own: the kernel Kbuild would only
